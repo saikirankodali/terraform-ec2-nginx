@@ -115,6 +115,38 @@ resource "aws_instance" "web_server" {
   EOF
 }
 
+# Create a CloudWatch metric alarm for CPU usage
+resource "aws_cloudwatch_metric_alarm" "cpu_usage_alarm" {
+  alarm_name          = "cpu-usage-alarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 80
+  unit               = "Percent"
+
+  dimensions = {
+    InstanceId = aws_instance.web_server.id
+  }
+
+  actions_enabled = true
+  alarm_actions = [aws_sns_topic.cpu_usage_alarm_topic.arn]
+}
+
+# Create an SNS topic for the alarm
+resource "aws_sns_topic" "cpu_usage_alarm_topic" {
+  name = "cpu-usage-alarm-topic"
+}
+
+# Subscribe to the SNS topic to receive email notifications
+resource "aws_sns_topic_subscription" "cpu_usage_alarm_subscription" {
+  topic_arn = aws_sns_topic.cpu_usage_alarm_topic.arn
+  protocol  = "email"
+  endpoint  = "your_email_address@example.com"
+}
+
 # Output the public IP of the instance
 output "instance_public_ip" {
   value = aws_instance.web_server.public_ip
