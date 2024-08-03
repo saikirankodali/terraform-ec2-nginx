@@ -1,0 +1,9 @@
+# Add the following line to your .gitignore file
+awscreds.txt
+
+# Terraform state files
+*.tfstate
+*.tfstate.backup
+
+# Terraform state directory
+terraform.tfstate.d/
